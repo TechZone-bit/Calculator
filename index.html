@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mohammad | Video Editing — Price Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #181818;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.14);
+    --accent: #e8ff47;
+    --accent2: #ff6b35;
+    --text: #f0f0f0;
+    --muted: #666;
+    --muted2: #999;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* Hero */
+  .hero {
+    position: relative;
+    padding: 80px 40px 60px;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(232,255,71,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(232,255,71,0.3);
+    padding: 5px 14px;
+    border-radius: 100px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(56px, 10vw, 110px);
+    line-height: 0.9;
+    letter-spacing: 0.01em;
+    color: var(--text);
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .hero h1 span {
+    color: var(--accent);
+    display: block;
+  }
+
+  .hero-sub {
+    margin-top: 24px;
+    font-size: 15px;
+    color: var(--muted2);
+    max-width: 420px;
+    line-height: 1.7;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 40px;
+    margin-top: 40px;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .stat { }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    color: var(--text);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* Main layout */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    min-height: calc(100vh - 300px);
+  }
+
+  /* Left panel */
+  .panel-left {
+    padding: 48px 40px;
+    border-right: 1px solid var(--border);
+  }
+
+  .section-title {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Type cards */
+  .type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 44px;
+  }
+
+  .type-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 16px;
+    cursor: pointer;
+    background: var(--surface);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .type-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .type-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .type-card.selected { border-color: var(--accent); }
+  .type-card.selected::before { opacity: 0.05; }
+
+  .type-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+    display: block;
+    position: relative;
+  }
+
+  .type-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    position: relative;
+  }
+  .type-card.selected .type-name { color: var(--accent); }
+
+  .type-desc {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .type-base {
+    font-size: 11px;
+    color: var(--muted2);
+    margin-top: 8px;
+    position: relative;
+  }
+
+  /* Length tiers */
+  .tier-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 44px;
+  }
+
+  .tier {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 8px;
+    cursor: pointer;
+    text-align: center;
+    background: var(--surface);
+    transition: all 0.2s ease;
+  }
+
+  .tier:hover { border-color: var(--border2); }
+  .tier.selected { border-color: var(--accent); background: rgba(232,255,71,0.04); }
+
+  .tier-range {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .tier.selected .tier-range { color: var(--accent); }
+
+  .tier-label {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+    line-height: 1.3;
+  }
+
+  .tier-mult {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  .tier.selected .tier-mult { color: var(--accent); }
+
+  /* Complexity */
+  .complexity-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 44px;
+  }
+
+  .chip {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 12px;
+    cursor: pointer;
+    text-align: center;
+    background: var(--surface);
+    transition: all 0.2s;
+  }
+
+  .chip:hover { border-color: var(--border2); }
+  .chip.selected { border-color: var(--accent); background: rgba(232,255,71,0.04); }
+
+  .chip-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .chip.selected .chip-name { color: var(--accent); }
+
+  .chip-desc {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .chip-add {
+    font-size: 11px;
+    color: var(--muted2);
+    margin-top: 6px;
+  }
+
+  /* Right panel — result */
+  .panel-right {
+    padding: 48px 36px;
+    position: sticky;
+    top: 0;
+    height: fit-content;
+  }
+
+  .result-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 16px;
+  }
+
+  .result-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .result-price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    line-height: 1;
+    color: var(--accent);
+    transition: all 0.3s ease;
+  }
+
+  .result-currency {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    color: var(--muted);
+    vertical-align: top;
+    margin-top: 10px;
+    display: inline-block;
+  }
+
+  .result-rows {
+    margin-top: 24px;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+  }
+
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .result-row:last-child { border-bottom: none; }
+
+  .result-row-key { color: var(--muted2); }
+  .result-row-val { color: var(--text); font-weight: 500; }
+
+  .delivery-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(232,255,71,0.08);
+    border: 1px solid rgba(232,255,71,0.2);
+    border-radius: 100px;
+    padding: 5px 12px;
+    margin-top: 20px;
+  }
+
+  .delivery-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  .insight-box {
+    background: rgba(255,107,53,0.06);
+    border: 1px solid rgba(255,107,53,0.2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--muted2);
+    line-height: 1.6;
+  }
+
+  .insight-box strong {
+    color: var(--accent2);
+    font-weight: 500;
+  }
+
+  /* WhatsApp CTA */
+  .cta-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 16px;
+    background: var(--accent);
+    color: #0a0a0a;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    margin-top: 16px;
+    transition: all 0.2s ease;
+    letter-spacing: 0.02em;
+  }
+
+  .cta-btn:hover {
+    background: #d4eb30;
+    transform: translateY(-1px);
+  }
+
+  .cta-btn svg { width: 18px; height: 18px; }
+
+  .advance-note {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 12px;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .price-anim {
+    animation: pricePop 0.25s ease;
+  }
+  @keyframes pricePop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .main { grid-template-columns: 1fr; }
+    .panel-right { border-top: 1px solid var(--border); }
+    .hero { padding: 48px 24px 40px; }
+    .panel-left { padding: 36px 24px; }
+    .panel-right { padding: 36px 24px; }
+    .hero-stats { gap: 24px; }
+    .tier-grid { grid-template-columns: repeat(3, 1fr); }
+    footer { flex-direction: column; gap: 8px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-tag">Video Editing Services</div>
+  <h1>Price<span>Calculator</span></h1>
+  <p class="hero-sub">Select your video type, length, and complexity — get an instant price estimate. No DMs needed.</p>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num">3</div>
+      <div class="stat-label">Video types</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">24h</div>
+      <div class="stat-label">Fast delivery</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">50%</div>
+      <div class="stat-label">Advance only</div>
+    </div>
+  </div>
+</section>
+
+<!-- Main -->
+<div class="main">
+  <!-- Left: controls -->
+  <div class="panel-left">
+
+    <p class="section-title">01 — Type of video</p>
+    <div class="type-grid">
+      <div class="type-card selected" onclick="selectType(this,'reel')">
+        <span class="type-icon">📱</span>
+        <div class="type-name">Reel / Short</div>
+        <div class="type-desc">Instagram, TikTok, YouTube Shorts</div>
+        <div class="type-base">from ₹30</div>
+      </div>
+      <div class="type-card" onclick="selectType(this,'cinematic')">
+        <span class="type-icon">🎬</span>
+        <div class="type-name">Cinematic</div>
+        <div class="type-desc">Color grade, storytelling edits</div>
+        <div class="type-base">from ₹60</div>
+      </div>
+      <div class="type-card" onclick="selectType(this,'motion')">
+        <span class="type-icon">✨</span>
+        <div class="type-name">Motion Graphics</div>
+        <div class="type-desc">Ads, animations, promo videos</div>
+        <div class="type-base">from ₹90</div>
+      </div>
+    </div>
+
+    <p class="section-title">02 — Video length</p>
+    <div class="tier-grid">
+      <div class="tier selected" onclick="selectTier(this,0)">
+        <div class="tier-range">0–30s</div>
+        <div class="tier-label">Ultra short</div>
+        <div class="tier-mult">×1.0</div>
+      </div>
+      <div class="tier" onclick="selectTier(this,1)">
+        <div class="tier-range">30s–3m</div>
+        <div class="tier-label">Short form</div>
+        <div class="tier-mult">×1.8</div>
+      </div>
+      <div class="tier" onclick="selectTier(this,2)">
+        <div class="tier-range">3–10m</div>
+        <div class="tier-label">Medium</div>
+        <div class="tier-mult">×3.5</div>
+      </div>
+      <div class="tier" onclick="selectTier(this,3)">
+        <div class="tier-range">10–30m</div>
+        <div class="tier-label">Long form</div>
+        <div class="tier-mult">×6.0</div>
+      </div>
+      <div class="tier" onclick="selectTier(this,4)">
+        <div class="tier-range">30–60m</div>
+        <div class="tier-label">Full length</div>
+        <div class="tier-mult">×10</div>
+      </div>
+    </div>
+
+    <p class="section-title">03 — Complexity</p>
+    <div class="complexity-grid">
+      <div class="chip selected" onclick="selectChip(this,'basic')">
+        <div class="chip-name">Basic</div>
+        <div class="chip-desc">Cuts & trim only</div>
+        <div class="chip-add">+₹0</div>
+      </div>
+      <div class="chip" onclick="selectChip(this,'standard')">
+        <div class="chip-name">Standard</div>
+        <div class="chip-desc">Color grade + sound</div>
+        <div class="chip-add">+₹50</div>
+      </div>
+      <div class="chip" onclick="selectChip(this,'advanced')">
+        <div class="chip-name">Advanced</div>
+        <div class="chip-desc">Full grade + FX</div>
+        <div class="chip-add">+₹120</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right: result -->
+  <div class="panel-right">
+    <div class="result-box">
+      <div class="result-label">Estimated price</div>
+      <div>
+        <span class="result-currency">₹</span><span class="result-price" id="totalPrice">30</span>
+      </div>
+
+      <div class="result-rows">
+        <div class="result-row">
+          <span class="result-row-key">Base rate</span>
+          <span class="result-row-val" id="baseRate">₹30</span>
+        </div>
+        <div class="result-row">
+          <span class="result-row-key">Length tier</span>
+          <span class="result-row-val" id="tierLabel">Ultra short ×1.0</span>
+        </div>
+        <div class="result-row">
+          <span class="result-row-key">Complexity</span>
+          <span class="result-row-val" id="complexityAdd">+₹0</span>
+        </div>
+      </div>
+
+      <div class="delivery-badge">
+        <div class="delivery-dot"></div>
+        <span id="deliveryNote">Delivery in ~12 hours</span>
+      </div>
+    </div>
+
+    <div class="insight-box">
+      <strong>Platform insight:</strong> <span id="insightNote">Most requested — Reels & TikToks in this range</span>
+    </div>
+
+    <a class="cta-btn" href="https://wa.me/91XXXXXXXXXX?text=Hi%20Mohammad!%20I%20checked%20your%20price%20calculator%20and%20I%27m%20interested%20in%20your%20video%20editing%20services." target="_blank">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Book via WhatsApp
+    </a>
+    <p class="advance-note">50% advance · remaining on delivery</p>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <span>© 2026 Mohammad — Video Editor</span>
+  <span>DaVinci Resolve Studio · Kashmir, India</span>
+</footer>
+
+<script>
+  const basePrices = { reel: 30, cinematic: 60, motion: 90 };
+  const complexityAdd = { basic: 0, standard: 50, advanced: 120 };
+  const tiers = [
+    { label: 'Ultra short ×1.0', mult: 1.0, delivery: '~12 hours', insight: 'Most requested — Reels & TikToks in this range' },
+    { label: 'Short form ×1.8',  mult: 1.8, delivery: '~24 hours', insight: 'Sweet spot — highest engagement on all platforms' },
+    { label: 'Medium ×3.5',      mult: 3.5, delivery: '~2 days',   insight: 'YouTube & TikTok long-form — growing demand' },
+    { label: 'Long form ×6.0',   mult: 6.0, delivery: '~3–4 days', insight: 'Documentaries, tutorials, event highlights' },
+    { label: 'Full length ×10',  mult: 10,  delivery: '~5–6 days', insight: 'Seminars, full events, long-form content' },
+  ];
+
+  let currentType = 'reel', currentComplexity = 'basic', currentTier = 0;
+
+  function selectType(el, type) {
+    document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected'); currentType = type; updateCalc();
+  }
+  function selectTier(el, idx) {
+    document.querySelectorAll('.tier').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected'); currentTier = idx; updateCalc();
+  }
+  function selectChip(el, level) {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected'); currentComplexity = level; updateCalc();
+  }
+
+  function updateCalc() {
+    const tier = tiers[currentTier];
+    const base = basePrices[currentType];
+    const extra = complexityAdd[currentComplexity];
+    const total = Math.round(base * tier.mult + extra);
+
+    const priceEl = document.getElementById('totalPrice');
+    priceEl.textContent = total.toLocaleString('en-IN');
+    priceEl.classList.remove('price-anim');
+    void priceEl.offsetWidth;
+    priceEl.classList.add('price-anim');
+
+    document.getElementById('baseRate').textContent = '₹' + base;
+    document.getElementById('tierLabel').textContent = tier.label;
+    document.getElementById('complexityAdd').textContent = '+₹' + extra;
+    document.getElementById('deliveryNote').textContent = 'Delivery in ' + tier.delivery;
+    document.getElementById('insightNote').textContent = tier.insight;
+  }
+
+  updateCalc();
+</script>
+</body>
+</html>
