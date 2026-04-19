@@ -459,6 +459,114 @@
     100% { transform: scale(1); }
   }
 
+  /* Duration slider */
+  .duration-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 44px;
+  }
+
+  .duration-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .duration-label {
+    font-size: 13px;
+    color: var(--muted2);
+  }
+
+  .duration-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--accent);
+    min-width: 120px;
+    text-align: right;
+  }
+
+  .duration-sub {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    margin-top: -4px;
+  }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .slider-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    line-height: 1;
+  }
+
+  .slider-btn:hover { background: var(--border2); border-color: var(--accent); color: var(--accent); }
+  .slider-btn:active { transform: scale(0.95); }
+
+  input[type=range].dur-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border2);
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type=range].dur-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+
+  input[type=range].dur-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 3px solid var(--bg);
+  }
+
+  .tier-badges {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+
+  .tier-badge {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .tier-badge.active { color: var(--accent); }
+
   /* Responsive */
   @media (max-width: 768px) {
     .main { grid-template-columns: 1fr; }
@@ -467,7 +575,6 @@
     .panel-left { padding: 36px 24px; }
     .panel-right { padding: 36px 24px; }
     .hero-stats { gap: 24px; }
-    .tier-grid { grid-template-columns: repeat(3, 1fr); }
     footer { flex-direction: column; gap: 8px; text-align: center; }
   }
 </style>
@@ -524,31 +631,27 @@
     </div>
 
     <p class="section-title">02 — Video length</p>
-    <div class="tier-grid">
-      <div class="tier selected" onclick="selectTier(this,0)">
-        <div class="tier-range">0–30s</div>
-        <div class="tier-label">Ultra short</div>
-        <div class="tier-mult">×1.0</div>
+    <div class="duration-wrap">
+      <div class="duration-display">
+        <div>
+          <div class="duration-label">Duration</div>
+        </div>
+        <div>
+          <div class="duration-value" id="durValue">0–30s</div>
+          <div class="duration-sub" id="durCategory">Ultra short</div>
+        </div>
       </div>
-      <div class="tier" onclick="selectTier(this,1)">
-        <div class="tier-range">30s–3m</div>
-        <div class="tier-label">Short form</div>
-        <div class="tier-mult">×1.8</div>
+      <div class="slider-row">
+        <button class="slider-btn" onclick="changeDur(-1)">−</button>
+        <input type="range" class="dur-slider" id="durSlider" min="0" max="4" step="1" value="0" oninput="onSlider(this.value)" />
+        <button class="slider-btn" onclick="changeDur(1)">+</button>
       </div>
-      <div class="tier" onclick="selectTier(this,2)">
-        <div class="tier-range">3–10m</div>
-        <div class="tier-label">Medium</div>
-        <div class="tier-mult">×3.5</div>
-      </div>
-      <div class="tier" onclick="selectTier(this,3)">
-        <div class="tier-range">10–30m</div>
-        <div class="tier-label">Long form</div>
-        <div class="tier-mult">×6.0</div>
-      </div>
-      <div class="tier" onclick="selectTier(this,4)">
-        <div class="tier-range">30–60m</div>
-        <div class="tier-label">Full length</div>
-        <div class="tier-mult">×10</div>
+      <div class="tier-badges">
+        <span class="tier-badge active" id="badge0">0–30s</span>
+        <span class="tier-badge" id="badge1">30s–3m</span>
+        <span class="tier-badge" id="badge2">3–10m</span>
+        <span class="tier-badge" id="badge3">10–30m</span>
+        <span class="tier-badge" id="badge4">30–60m</span>
       </div>
     </div>
 
@@ -606,7 +709,7 @@
       <strong>Platform insight:</strong> <span id="insightNote">Most requested — Reels & TikToks in this range</span>
     </div>
 
-    <a class="cta-btn" href="https://wa.me/916005008780?text=Hi%20Enigma!%20I%20checked%20your%20price%20calculator%20and%20I%27m%20interested%20in%20your%20video%20editing%20services." target="_blank">
+    <a class="cta-btn" id="waBtn" href="#" target="_blank">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
       Book via WhatsApp
     </a>
@@ -617,18 +720,21 @@
 <!-- Footer -->
 <footer>
   <span>© 2026 Mohammad — Video Editor</span>
-  <span>DaVinci Resolve Studio ·India</span>
+  <span>DaVinci Resolve Studio · Kashmir, India</span>
 </footer>
 
 <script>
   const basePrices = { reel: 30, cinematic: 60, motion: 90 };
   const complexityAdd = { basic: 0, standard: 50, advanced: 120 };
+  const typeNames = { reel: 'Reel / Short', cinematic: 'Cinematic', motion: 'Motion Graphics' };
+  const complexityNames = { basic: 'Basic', standard: 'Standard', advanced: 'Advanced' };
+
   const tiers = [
-    { label: 'Ultra short ×1.0', mult: 1.0, delivery: '~12 hours', insight: 'Most requested — Reels & TikToks in this range' },
-    { label: 'Short form ×1.8',  mult: 1.8, delivery: '~24 hours', insight: 'Sweet spot — highest engagement on all platforms' },
-    { label: 'Medium ×3.5',      mult: 3.5, delivery: '~2 days',   insight: 'YouTube & TikTok long-form — growing demand' },
-    { label: 'Long form ×6.0',   mult: 6.0, delivery: '~3–4 days', insight: 'Documentaries, tutorials, event highlights' },
-    { label: 'Full length ×10',  mult: 10,  delivery: '~5–6 days', insight: 'Seminars, full events, long-form content' },
+    { range: '0–30s',   category: 'Ultra short',  mult: 1.0, delivery: '~12 hours', insight: 'Most requested — Reels & TikToks in this range' },
+    { range: '30s–3m',  category: 'Short form',   mult: 1.8, delivery: '~24 hours', insight: 'Sweet spot — highest engagement on all platforms' },
+    { range: '3–10m',   category: 'Medium',        mult: 3.5, delivery: '~2 days',   insight: 'YouTube & TikTok long-form — growing demand' },
+    { range: '10–30m',  category: 'Long form',     mult: 6.0, delivery: '~3–4 days', insight: 'Documentaries, tutorials, event highlights' },
+    { range: '30–60m',  category: 'Full length',   mult: 10,  delivery: '~5–6 days', insight: 'Seminars, full events, long-form content' },
   ];
 
   let currentType = 'reel', currentComplexity = 'basic', currentTier = 0;
@@ -637,13 +743,34 @@
     document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected'); currentType = type; updateCalc();
   }
-  function selectTier(el, idx) {
-    document.querySelectorAll('.tier').forEach(c => c.classList.remove('selected'));
-    el.classList.add('selected'); currentTier = idx; updateCalc();
-  }
+
   function selectChip(el, level) {
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected'); currentComplexity = level; updateCalc();
+  }
+
+  function onSlider(val) {
+    currentTier = parseInt(val);
+    updateDurDisplay();
+    updateCalc();
+  }
+
+  function changeDur(delta) {
+    const slider = document.getElementById('durSlider');
+    const newVal = Math.min(4, Math.max(0, currentTier + delta));
+    currentTier = newVal;
+    slider.value = newVal;
+    updateDurDisplay();
+    updateCalc();
+  }
+
+  function updateDurDisplay() {
+    const tier = tiers[currentTier];
+    document.getElementById('durValue').textContent = tier.range;
+    document.getElementById('durCategory').textContent = tier.category;
+    for (let i = 0; i <= 4; i++) {
+      document.getElementById('badge' + i).classList.toggle('active', i === currentTier);
+    }
   }
 
   function updateCalc() {
@@ -659,12 +786,25 @@
     priceEl.classList.add('price-anim');
 
     document.getElementById('baseRate').textContent = '₹' + base;
-    document.getElementById('tierLabel').textContent = tier.label;
+    document.getElementById('tierLabel').textContent = tier.category + ' (' + tier.range + ')';
     document.getElementById('complexityAdd').textContent = '+₹' + extra;
     document.getElementById('deliveryNote').textContent = 'Delivery in ' + tier.delivery;
     document.getElementById('insightNote').textContent = tier.insight;
+
+    // Dynamic WhatsApp message with selected format
+    const msg = `Hi Enigma! I checked your price calculator and I'd like to book a video.
+
+Type: ${typeNames[currentType]}
+Duration: ${tier.range} (${tier.category})
+Complexity: ${complexityNames[currentComplexity]}
+Estimated Price: ₹${total.toLocaleString('en-IN')}
+
+Please confirm availability.`;
+
+    document.getElementById('waBtn').href = 'https://wa.me/91XXXXXXXXXX?text=' + encodeURIComponent(msg);
   }
 
+  updateDurDisplay();
   updateCalc();
 </script>
 </body>
