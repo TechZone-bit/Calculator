@@ -614,19 +614,19 @@
         <span class="type-icon">📱</span>
         <div class="type-name">Reel / Short</div>
         <div class="type-desc">Instagram, TikTok, YouTube Shorts</div>
-        <div class="type-base">from ₹30</div>
+        <div class="type-base">from ₹99</div>
       </div>
       <div class="type-card" onclick="selectType(this,'cinematic')">
         <span class="type-icon">🎬</span>
         <div class="type-name">Cinematic</div>
         <div class="type-desc">Color grade, storytelling edits</div>
-        <div class="type-base">from ₹60</div>
+        <div class="type-base">from ₹499</div>
       </div>
       <div class="type-card" onclick="selectType(this,'motion')">
         <span class="type-icon">✨</span>
         <div class="type-name">Motion Graphics</div>
         <div class="type-desc">Ads, animations, promo videos</div>
-        <div class="type-base">from ₹90</div>
+        <div class="type-base">from ₹799</div>
       </div>
     </div>
 
@@ -660,17 +660,17 @@
       <div class="chip selected" onclick="selectChip(this,'basic')">
         <div class="chip-name">Basic</div>
         <div class="chip-desc">Cuts & trim only</div>
-        <div class="chip-add">+₹0</div>
+        <div class="chip-add" id="chip-basic-add">+₹0</div>
       </div>
       <div class="chip" onclick="selectChip(this,'standard')">
         <div class="chip-name">Standard</div>
         <div class="chip-desc">Color grade + sound</div>
-        <div class="chip-add">+₹50</div>
+        <div class="chip-add" id="chip-standard-add">+₹300</div>
       </div>
       <div class="chip" onclick="selectChip(this,'advanced')">
         <div class="chip-name">Advanced</div>
         <div class="chip-desc">Full grade + FX</div>
-        <div class="chip-add">+₹120</div>
+        <div class="chip-add" id="chip-advanced-add">+₹700</div>
       </div>
     </div>
 
@@ -724,8 +724,15 @@
 </footer>
 
 <script>
-  const basePrices = { reel: 30, cinematic: 60, motion: 90 };
-  const complexityAdd = { basic: 0, standard: 50, advanced: 120 };
+  const basePrices = { reel: 99, cinematic: 499, motion: 799 };
+
+  // Each type has its own complexity pricing
+  const complexityPrices = {
+    reel:      { basic: 0, standard: 100, advanced: 250 },
+    cinematic: { basic: 0, standard: 300, advanced: 700 },
+    motion:    { basic: 0, standard: 500, advanced: 1200 }
+  };
+
   const typeNames = { reel: 'Reel / Short', cinematic: 'Cinematic', motion: 'Motion Graphics' };
   const complexityNames = { basic: 'Basic', standard: 'Standard', advanced: 'Advanced' };
 
@@ -776,7 +783,7 @@
   function updateCalc() {
     const tier = tiers[currentTier];
     const base = basePrices[currentType];
-    const extra = complexityAdd[currentComplexity];
+    const extra = complexityPrices[currentType][currentComplexity];
     const total = Math.round(base * tier.mult + extra);
 
     const priceEl = document.getElementById('totalPrice');
@@ -790,6 +797,12 @@
     document.getElementById('complexityAdd').textContent = '+₹' + extra;
     document.getElementById('deliveryNote').textContent = 'Delivery in ' + tier.delivery;
     document.getElementById('insightNote').textContent = tier.insight;
+
+    // Update chip labels dynamically based on current type
+    const cp = complexityPrices[currentType];
+    document.getElementById('chip-basic-add').textContent    = '+₹' + cp.basic;
+    document.getElementById('chip-standard-add').textContent = '+₹' + cp.standard;
+    document.getElementById('chip-advanced-add').textContent = '+₹' + cp.advanced;
 
     // Dynamic WhatsApp message with selected format
     const msg = `Hi Enigma! I checked your price calculator and I'd like to book a video.
